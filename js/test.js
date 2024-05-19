@@ -15,6 +15,7 @@ export class Playable {
 export class Pong extends Playable {
 
     colliding = false;
+    BlockColliding = false;
     color = "#fff"
 
     constructor(x, y, sx, sy, radius) {
@@ -49,7 +50,7 @@ export class Pong extends Playable {
             }
         } else if (Math.abs(newAngle) > (5 * Math.PI / 6)) {
             if (positive) {
-                deviation =- angle + 5 * Math.PI / 6;
+                deviation = - angle + 5 * Math.PI / 6;
             } else {
                 deviation = -angle - (5 * Math.PI / 6);
             }
@@ -86,6 +87,72 @@ export class Pong extends Playable {
         //         }
         //     }
         // }
+
+        for (let block of objects.blocks) {
+            let totalDistance = Math.sqrt(Math.pow(block.position.x - this.position.x, 2) + Math.pow(block.position.y - this.position.y, 2));
+            if (totalDistance > this.radius + block.radius) {
+                this.BlockColliding = false;
+                continue;
+            }
+
+            if (this.BlockColliding) {
+                // console.log("colliding");
+                continue;
+            }
+
+            // block vertical collision
+            if (this.position.x > block.position.x - block.width / 2 && this.position.x < block.position.x + block.width / 2) {
+                let yDistance = Math.abs(this.position.y - block.position.y);
+
+                if (yDistance < this.radius + block.height / 2) {
+                    let overlap = this.radius + block.height / 2 - yDistance;
+                    console.log(this.velocity.y, this.position.y, block.position.y, overlap);
+                    this.position.y -= overlap;
+                    this.velocity.y *= -1;
+                    console.log(this.velocity.y, this.position.y, block.position.y, overlap);
+                    this.BlockColliding = true;
+                    block.break();
+                }
+            }
+
+            // block horizontal collision
+            else if (this.position.y > block.position.y - block.height / 2 && this.position.y < block.position.y + block.height / 2) {
+                let xDistance = Math.abs(this.position.x - block.position.x);
+                if (xDistance < this.radius + block.width / 2) {
+                    let overlap = this.radius + block.width / 2 - xDistance;
+                    this.position.x -= overlap;
+                    this.velocity.x *= -1;
+                    this.BlockColliding = true;
+                    block.break();
+                }
+            }
+
+            // block corner collision
+            else {
+                let cornerName = block.closestCorner(this.position);
+                let corner = block.corners[cornerName];
+
+                let distance = Math.sqrt(Math.pow(corner.x - this.position.x, 2) + Math.pow(corner.y - this.position.y, 2));
+                if (distance < this.radius) {
+                    let angle = Math.atan2(corner.y - this.position.y, corner.x - this.position.x);
+                    let overlap = this.radius - distance;
+                    this.position.x -= overlap * Math.cos(angle);
+                    this.position.y -= overlap * Math.sin(angle);
+
+                    let xVelocity = this.velocity.x;
+
+                    let q = - (2 * ((xVelocity) * (this.position.x - corner.x) + this.velocity.y * (this.position.y - corner.y))) / (Math.pow(this.radius, 2));
+
+                    this.velocity.x += q * (this.position.x - corner.x);
+                    this.velocity.y += q * (this.position.y - corner.y);
+                    // this.velocity.y = -Math.abs(this.velocity.y);
+                    this.BlockColliding = true;
+
+                    block.break();
+                    // pausecomp(400);
+                }
+            }
+        }
 
         if (this.velocity.y < 0) {
             return;
@@ -132,7 +199,7 @@ export class Pong extends Playable {
 
                     // console.log("deviation", deviation, player.velocity.x);
 
-                    deviation += 1/3 * ((this.position.x - player.position.x)/(player.width/2));
+                    deviation += 1 / 3 * ((this.position.x - player.position.x) / (player.width / 2));
 
                     let angle = this.getAngle();
 
@@ -216,10 +283,12 @@ export class Pong extends Playable {
                 }
             }
         }
+
+
     }
 
     update(delta) {
-        
+
         let maxSpeed = this.radius;
         this.velocity.x = Math.min(maxSpeed, Math.max(-maxSpeed, this.velocity.x));
         this.velocity.y = Math.min(maxSpeed, Math.max(-maxSpeed, this.velocity.y));
@@ -229,8 +298,8 @@ export class Pong extends Playable {
         // this.velocity.x = Math.min(2, Math.max(-2, this.velocity.x));
         // this.velocity.y = Math.min(2, Math.max(-2, this.velocity.y));
 
-        // this.velocity.x *= 10001/10000;
-        // this.velocity.y *= 10001/10000;
+        this.velocity.x *= 10001 / 10000;
+        this.velocity.y *= 10001 / 10000;
 
         // console.log(this.velocity.x, this.velocity.y);
 

@@ -1,6 +1,7 @@
 import { scaleFormula, posToCanvas } from './utils.js';
 import { GameLoop } from './core.js';
 import { Pong } from './test.js';
+import { Brick } from './brick.js';
 
 const onecolor = one.color;
 
@@ -43,7 +44,8 @@ export const bufferContext = bufferCanvas.getContext('2d');
 bufferContext.fillStyle = '#fff';
 bufferContext.fillRect(0, 0, bufferW, bufferH);
 
-const gameLoop = new GameLoop(bufferContext, canvas, bufferCanvas);
+// const gameLoop = new GameLoop(bufferContext, canvas, bufferCanvas);
+GameLoop.init();
 
 function getMousePos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
@@ -53,7 +55,7 @@ function getMousePos(canvas, evt) {
     };
 }
 
-export let mousePos = {x: 0, y: 0};
+export let mousePos = { x: 0, y: 0 };
 
 // Function to handle mouse movement
 function onMouseMove(evt) {
@@ -68,7 +70,10 @@ canvas.addEventListener('mousemove', onMouseMove, false);
 
 let fadeCountdown = 0;
 // let scaleCanvas = 0.2;
-let scaleCanvas = 1.04;
+let scaleCanvas = .04;
+let scaleCanvasCooldown = 0;
+
+let gameLoopCooldown = 0;
 
 
 
@@ -92,11 +97,19 @@ function renderWorld(delta) {
     canvas.height = window.innerHeight * scaleCanvas;
     canvas.width = canvas.height * (4 / 3);
 
-    if (scaleCanvas < 1.04){
-        scaleCanvas += scaleFormula(1.04 - scaleCanvas, 0.00001, 0.01, 1.04, 0.4);
+    if (scaleCanvas < 1.04) {
+        // scaleCanvas += scaleFormula(1.04 - scaleCanvas, 0.00001, 0.01, 1.04, 0.4);
+        if (scaleCanvasCooldown <= 0) {
+            scaleCanvas += scaleFormula(1.04 - scaleCanvas, 0.00001, 0.05, 1.04, 1);
+            scaleCanvasCooldown = 3;
+        }
+
+        scaleCanvasCooldown--;
     }
 
-    gameLoop.update(delta);
+
+
+    GameLoop.update(delta);
 
     // pausecomp(50);
 
