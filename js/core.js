@@ -22,7 +22,7 @@ export class GameLoop {
         // objects.balls.push(pong);
         // }
         // objects.interface.push(new InsertCoinScreen());
-        objects.player.push(new PlayerBar(0, 0, 0, true));
+        objects.player.push(new PlayerBar(0, 220, 0, 0, false));
         // let player2 = new PlayerBar(0, 0, 0);
         // player2.position.y = 160;
         // objects.player.push(player2);
@@ -55,29 +55,29 @@ export class GameLoop {
         // pong = new Pong(160, 120, 2, 1, 5);
         // objects.balls.push(pong);
 
-        for (let i = 0; i < 10; i++) {
-            let pong = new Pong(150, 160, 0, 3, 5);
-            let angle = Math.random() * Math.PI * 2;
-            let temp = { x: pong.velocity.x, y: pong.velocity.y };
-            pong.velocity.x = temp.x * Math.cos(angle) - temp.y * Math.sin(angle);
-            pong.velocity.y = temp.x * Math.sin(angle) + temp.y * Math.cos(angle);
-            objects.balls.push(pong);
-        }
+        // for (let i = 0; i < 200; i++) {
+        //     let pong = new Pong(150, 160, 0, 3, 5);
+        //     let angle = Math.random() * Math.PI * 2;
+        //     let temp = { x: pong.velocity.x, y: pong.velocity.y };
+        //     pong.velocity.x = temp.x * Math.cos(angle) - temp.y * Math.sin(angle);
+        //     pong.velocity.y = temp.x * Math.sin(angle) + temp.y * Math.cos(angle);
+        //     objects.balls.push(pong);
+        // }
 
         // objects.balls.push(new Pong(160, 120, 0, -2, 5));
 
-        let minX = 30;
-        let maxX = 280;
-        let cols = 20;
-        let rows = 10;
-        for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-                let x = minX + (maxX - minX) / cols * i + (rows - j) % 2 * 10;
-                let y = 20 + 7 * j;
-                let brick = new Brick(x, y, 10, 4);
-                objects.blocks.push(brick);
-            }
-        }
+        // let minX = 30;
+        // let maxX = 280;
+        // let cols = 20;
+        // let rows = 10;
+        // for (let i = 0; i < cols; i++) {
+        //     for (let j = 0; j < rows; j++) {
+        //         let x = minX + (maxX - minX) / cols * i + (rows - j) % 2 * 10;
+        //         let y = 20 + 7 * j;
+        //         let brick = new Brick(x, y, 10, 4);
+        //         objects.blocks.push(brick);
+        //     }
+        // }
 
         // let brick = new Brick(160, 120, 20, 10);
         // objects.blocks.push(brick);
@@ -124,7 +124,7 @@ export class GameLoop {
         });
 
         if (this.cooldown <= 0) {
-            this.cooldown = 0.05;
+            this.cooldown = 0.0;
         }
         this.cooldown -= delta;
 

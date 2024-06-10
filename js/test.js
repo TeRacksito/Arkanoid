@@ -12,6 +12,46 @@ export class Playable {
     }
 }
 
+function intersectionOf(line1, line2) {
+    const { x1: x1_1, y1: y1_1, x2: x2_1, y2: y2_1 } = line1;
+    const { x1: x1_2, y1: y1_2, x2: x2_2, y2: y2_2 } = line2;
+
+    const denominator = (y2_2 - y1_2) * (x2_1 - x1_1) - (x2_2 - x1_2) * (y2_1 - y1_1);
+
+    if (denominator === 0) {
+        return null;
+    }
+
+    const numerator = (x2_2 - x1_2) * (y1_1 - y1_2) - (y2_2 - y1_2) * (x1_1 - x1_2);
+
+    const t = numerator / denominator;
+    const intersectionPoint = {
+        x: x1_1 + t * (x2_1 - x1_1),
+        y: y1_1 + t * (y2_1 - y1_1)
+    };
+
+    return intersectionPoint;
+}
+
+function isPointInSemiline(startPoint, throughPoint, testPoint) {
+    const { x: x1, y: y1 } = startPoint;
+    const { x: x2, y: y2 } = throughPoint;
+    const { x: x3, y: y3 } = testPoint;
+
+    const crossProduct = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+
+    const isCollinear = crossProduct === 0;
+
+    if (!isCollinear) {
+        return false;
+    }
+
+    const isOnSameSideX = (x3 - x1) * (x2 - x1) >= 0;
+    const isOnSameSideY = (y3 - y1) * (y2 - y1) >= 0;
+
+    return isOnSameSideX && isOnSameSideY;
+}
+
 export class Pong extends Playable {
 
     colliding = false;

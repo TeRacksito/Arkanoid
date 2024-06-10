@@ -7,8 +7,8 @@ export class PlayerBar extends Playable {
     height = 5;
     auto;
 
-    constructor(x, sx, sy, auto = false) {
-        super(x, 220, sx, sy);
+    constructor(x, y, sx, sy, auto = false) {
+        super(x, y, sx, sy);
 
         this.auto = auto;
 
@@ -71,8 +71,8 @@ export class PlayerBar extends Playable {
         }
         let vector = { x: (ball.position.x - this.position.x) / 3, y: (ball.position.y - this.position.y) / 3 };
 
-        this.velocity.x = vector.x;
-        // this.position.x = ball.position.x;
+        // this.velocity.x = vector.x;
+        this.position.x = ball.position.x;
 
         return true;
     }

@@ -70,7 +70,7 @@ canvas.addEventListener('mousemove', onMouseMove, false);
 
 let fadeCountdown = 0;
 // let scaleCanvas = 0.2;
-let scaleCanvas = .04;
+let scaleCanvas = 1.04;
 let scaleCanvasCooldown = 0;
 
 let gameLoopCooldown = 0;
@@ -142,7 +142,7 @@ const spriteTexture = regl.texture({
 });
 
 const termFgColor = hex2vector('#fee');
-const termBgColor = hex2vector('#101010');
+const termBgColor = hex2vector('#303030');
 
 const quadCommand = regl({
     vert: `
