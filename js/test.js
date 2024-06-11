@@ -12,30 +12,63 @@ export class Playable {
     }
 }
 
+function intersectionLineCircle(line, circle) {
+    let point = { x: line.x1, y: line.y1 };
+    let vector = { x: line.x2, y: line.y2 };
+
+    let dx = point.x - circle.x;
+    let dy = point.y - circle.y;
+
+    let a = vector.x * vector.x + vector.y * vector.y;
+    let b = 2 * (dx * vector.x + dy * vector.y);
+    let c = dx * dx + dy * dy - circle.r * circle.r;
+
+    let discriminant = b * b - 4 * a * c;
+
+    if (discriminant < 0) {
+        return null;
+    }
+
+    let t1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+    let t2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+
+    let intersection1 = { x: point.x + t1 * vector.x, y: point.y + t1 * vector.y };
+    let intersection2 = { x: point.x + t2 * vector.x, y: point.y + t2 * vector.y };
+
+    let distance1 = Math.sqrt(Math.pow(intersection1.x - point.x, 2) + Math.pow(intersection1.y - point.y, 2));
+    let distance2 = Math.sqrt(Math.pow(intersection2.x - point.x, 2) + Math.pow(intersection2.y - point.y, 2));
+
+    if (distance1 < distance2) {
+        return intersection1;
+    }
+    return intersection2;
+
+}
+
 function intersectionOf(line1, line2) {
     const { x1: x1_1, y1: y1_1, x2: x2_1, y2: y2_1 } = line1;
     const { x1: x1_2, y1: y1_2, x2: x2_2, y2: y2_2 } = line2;
 
     const denominator =
-      (y2_2 - y1_2) * (x2_1 - x1_1) - (x2_2 - x1_2) * (y2_1 - y1_1);
+        (y2_2 - y1_2) * (x2_1 - x1_1) - (x2_2 - x1_2) * (y2_1 - y1_1);
 
     if (denominator === 0) {
-      return null;
+        return null;
     }
 
     const numerator =
-      (x2_2 - x1_2) * (y1_1 - y1_2) - (y2_2 - y1_2) * (x1_1 - x1_2);
+        (x2_2 - x1_2) * (y1_1 - y1_2) - (y2_2 - y1_2) * (x1_1 - x1_2);
 
     const t = numerator / denominator;
     const intersectionPoint = {
-      x: x1_1 + t * (x2_1 - x1_1),
-      y: y1_1 + t * (y2_1 - y1_1),
+        x: x1_1 + t * (x2_1 - x1_1),
+        y: y1_1 + t * (y2_1 - y1_1),
     };
 
     return intersectionPoint;
-  }
+}
 
-  function isPointInSemiline(startPoint, throughPoint, testPoint) {
+function isPointInSemiline(startPoint, throughPoint, testPoint) {
     const { x: x1, y: y1 } = startPoint;
     const { x: x2, y: y2 } = throughPoint;
     const { x: x3, y: y3 } = testPoint;
@@ -48,21 +81,19 @@ function intersectionOf(line1, line2) {
 
     // float point precision issue workaround
     if (slope1 != slope2 && (Math.round(slope1) != Math.round(slope2) || Math.max(abs_slope1, abs_slope2) - Math.min(abs_slope1, abs_slope2) > 0.000001)) {
-      return false;
+        return false;
     }
 
     let r = (x3 - x1) / (x2 - x3);
 
-    console.log(r);
-
     if (r < 0 && r > -1) {
-      return false;
+        return false;
     }
 
     return true;
-  }
+}
 
-  function isPointInLine(startPoint, endPoint, testPoint) {
+function isPointInLine(startPoint, endPoint, testPoint) {
     const { x: x1, y: y1 } = startPoint;
     const { x: x2, y: y2 } = endPoint;
     const { x: x3, y: y3 } = testPoint;
@@ -75,19 +106,38 @@ function intersectionOf(line1, line2) {
 
     // float point precision issue workaround
     if (slope1 != slope2 && (Math.round(slope1) != Math.round(slope2) || Math.max(abs_slope1, abs_slope2) - Math.min(abs_slope1, abs_slope2) > 0.000001)) {
-      return false;
+        return false;
     }
 
     let r = (x3 - x1) / (x2 - x3);
 
-    console.log(r);
-
     if (r < 0) {
-      return false;
+        return false;
     }
 
     return true;
-  }
+}
+
+function PointInLine(startPoint, endPoint, testPoint) {
+    const { x: x1, y: y1 } = startPoint;
+    const { x: x2, y: y2 } = endPoint;
+    const { x: x3, y: y3 } = testPoint;
+
+    let slope1 = ((y2 - y1) / (x2 - x1));
+    let slope2 = (y3 - y1) / (x3 - x1);
+
+    let abs_slope1 = Math.abs(slope1);
+    let abs_slope2 = Math.abs(slope2);
+
+    // float point precision issue workaround
+    if (slope1 != slope2 && (Math.round(slope1) != Math.round(slope2) || Math.max(abs_slope1, abs_slope2) - Math.min(abs_slope1, abs_slope2) > 0.000001)) {
+        return null;
+    }
+
+    let r = (x3 - x1) / (x2 - x3);
+    return r;
+}
+
 
 export class Pong extends Playable {
 
@@ -145,6 +195,170 @@ export class Pong extends Playable {
         return deviation;
     }
 
+    blockContinuosCollision(block) {
+        // # CCD
+        let origin, n1, n2 = block.closestSides(this.position);
+
+        // ## decide if there is a predominant side
+
+        let pSide = null;
+        let pSide_n1 = { x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y, x3: n2.x, y3: n2.y };
+        let pSide_n2 = { x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y, x3: n1.x, y3: n1.y };
+
+        // evaluate the intersection of the trajectory with both sides origin -> n1 and origin -> n2
+
+        let intersection_n1 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y }, { x1: this.position.x, y1: this.position.y, x2: nextFramePosition.x, y2: nextFramePosition.y });
+        let intersection_n2 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y }, { x1: this.position.x, y1: this.position.y, x2: nextFramePosition.x, y2: nextFramePosition.y });
+
+        let isPointInLine_n1 = isPointInLine(origin, n1, intersection_n1);
+        let isPointInLine_n2 = isPointInLine(origin, n2, intersection_n2);
+
+        if (isPointInLine_n1 && isPointInLine_n2) {
+            let distance_n1 = Math.sqrt(Math.pow(intersection_n1.x - this.position.x, 2) + Math.pow(intersection_n1.y - this.position.y, 2));
+            let distance_n2 = Math.sqrt(Math.pow(intersection_n2.x - this.position.x, 2) + Math.pow(intersection_n2.y - this.position.y, 2));
+
+            if (distance_n1 < distance_n2) {
+                pSide = pSide_n1;
+            } else {
+                pSide = pSide_n2;
+            }
+        } else if (isPointInLine_n1) {
+            pSide = pSide_n1;
+        } else if (isPointInLine_n2) {
+            pSide = pSide_n2;
+        } else {
+            let directorVector = { x: nextFramePosition.x - this.position.x, y: this.position.y - nextFramePosition.y };
+
+            // normalizing the director vector
+            let magnitude = Math.sqrt(Math.pow(directorVector.x, 2) + Math.pow(directorVector.y, 2));
+            directorVector.x /= magnitude;
+            directorVector.y /= magnitude;
+
+            directorVector.x *= this.radius;
+            directorVector.y *= this.radius;
+
+            let directorVectorLeft = { x: -directorVector.y, y: directorVector.x };
+            let directorVectorRight = { x: directorVector.y, y: -directorVector.x };
+
+            let positionLeftInitial = { x: this.position.x + directorVectorLeft.x, y: this.position.y + directorVectorLeft.y };
+            let positionRightInitial = { x: this.position.x + directorVectorRight.x, y: this.position.y + directorVectorRight.y };
+
+            let positionLeftFinal = { x: nextFramePosition.x + directorVectorLeft.x, y: nextFramePosition.y + directorVectorLeft.y };
+            let positionRightFinal = { x: nextFramePosition.x + directorVectorRight.x, y: nextFramePosition.y + directorVectorRight.y };
+
+            let intersectionLeft_n1 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y }, { x1: positionLeftInitial.x, y1: positionLeftInitial.y, x2: positionLeftFinal.x, y2: positionLeftFinal.y });
+            let intersectionLeft_n2 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y }, { x1: positionLeftInitial.x, y1: positionLeftInitial.y, x2: positionLeftFinal.x, y2: positionLeftFinal.y });
+
+            let intersectionRight_n1 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y }, { x1: positionRightInitial.x, y1: positionRightInitial.y, x2: positionRightFinal.x, y2: positionRightFinal.y });
+            let intersectionRight_n2 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y }, { x1: positionRightInitial.x, y1: positionRightInitial.y, x2: positionRightFinal.x, y2: positionRightFinal.y });
+
+            let isPointInLineLeft_n1 = isPointInLine(positionLeftInitial, positionLeftFinal, intersectionLeft_n1);
+            let isPointInLineLeft_n2 = isPointInLine(positionLeftInitial, positionLeftFinal, intersectionLeft_n2);
+
+            let isPointInLineRight_n1 = isPointInLine(positionRightInitial, positionRightFinal, intersectionRight_n1);
+            let isPointInLineRight_n2 = isPointInLine(positionRightInitial, positionRightFinal, intersectionRight_n2);
+
+            if (isPointInLineLeft_n1 && isPointInLineLeft_n2) {
+                let distance_n1 = Math.sqrt(Math.pow(intersectionLeft_n1.x - this.position.x, 2) + Math.pow(intersectionLeft_n1.y - this.position.y, 2));
+                let distance_n2 = Math.sqrt(Math.pow(intersectionLeft_n2.x - this.position.x, 2) + Math.pow(intersectionLeft_n2.y - this.position.y, 2));
+
+                if (distance_n1 < distance_n2) {
+                    pSide = pSide_n1;
+                } else {
+                    pSide = pSide_n2;
+                }
+            } else if (isPointInLineLeft_n1) {
+                pSide = pSide_n1;
+            } else if (isPointInLineLeft_n2) {
+                pSide = pSide_n2;
+            } else if (isPointInLineRight_n1 && isPointInLineRight_n2) {
+                let distance_n1 = Math.sqrt(Math.pow(intersectionRight_n1.x - this.position.x, 2) + Math.pow(intersectionRight_n1.y - this.position.y, 2));
+                let distance_n2 = Math.sqrt(Math.pow(intersectionRight_n2.x - this.position.x, 2) + Math.pow(intersectionRight_n2.y - this.position.y, 2));
+
+                if (distance_n1 < distance_n2) {
+                    pSide = pSide_n1;
+                } else {
+                    pSide = pSide_n2;
+                }
+            } else if (isPointInLineRight_n1) {
+                pSide = pSide_n1;
+            } else if (isPointInLineRight_n2) {
+                pSide = pSide_n2;
+            }
+        }
+
+        let result = null;
+
+        if (pSide != null) {
+            let directorVector_O_n = { x: x3 - x1, y: y3 - y1 };
+
+            // normalizing the director vector
+            let magnitude = Math.sqrt(Math.pow(directorVector_O_n.x, 2) + Math.pow(directorVector_O_n.y, 2));
+            directorVector_O_n.x /= magnitude;
+            directorVector_O_n.y /= magnitude;
+
+            directorVector_O_n.x *= this.radius;
+            directorVector_O_n.y *= this.radius;
+
+            let origin_margin = { x: origin.x + directorVector_O_n.x, y: origin.y + directorVector_O_n.y };
+            let n_margin = { x: pSide.x2 + directorVector_O_n.x, y: pSide.y2 + directorVector_O_n.y };
+
+            let intersection = intersectionOf({ x1: origin_margin.x, y1: origin_margin.y, x2: n_margin.x, y2: n_margin.y }, { x1: this.position.x, y1: this.position.y, x2: nextFramePosition.x, y2: nextFramePosition.y });
+            let pointInLine = PointInLine(origin_margin, n_margin, intersection);
+
+            if (pointInLine >= 0) {
+                let distance_intersection = Math.sqrt(Math.pow(intersection.x - this.position.x, 2) + Math.pow(intersection.y - this.position.y, 2));
+                let distance_nextFrame = Math.sqrt(Math.pow(nextFramePosition.x - this.position.x, 2) + Math.pow(nextFramePosition.y - this.position.y, 2));
+
+                if (distance_intersection < distance_nextFrame) {
+                    result = { x: intersection.x, y: intersection.y, time: distance_intersection / distance_nextFrame };
+                }
+            } else if (pointInLine < 0 && pointInLine > -1) {
+                let directorVector = { x: nextFramePosition.x - this.position.x, y: this.position.y - nextFramePosition.y };
+
+                let intersection_circle = intersectionLineCircle({ x1: origin.x, y1: origin.y, x2: directorVector.x, y2: directorVector.y }, { x: this.position.x, y: this.position.y, r: this.radius });
+
+                if (intersection_circle === null) {
+                    continue;
+                }
+
+                let directorVector_ic_i = { x: intersection.x - intersection_circle.x, y: intersection.y - intersection_circle.y };
+                let result_point = { x: origin.x + directorVector_ic_i.x, y: origin.y + directorVector_ic_i.y };
+
+                let distance_intersection = Math.sqrt(Math.pow(result_point.x - this.position.x, 2) + Math.pow(result_point.y - this.position.y, 2));
+                let distance_nextFrame = Math.sqrt(Math.pow(nextFramePosition.x - this.position.x, 2) + Math.pow(nextFramePosition.y - this.position.y, 2));
+
+                if (distance_intersection < distance_nextFrame) {
+                    result = { x: result_point.x, y: result_point.y, time: distance_intersection / distance_nextFrame };
+                }
+            } else if (pointInLine < 0 && pointInLine < -1) {
+                let directorVector = { x: nextFramePosition.x - this.position.x, y: this.position.y - nextFramePosition.y };
+
+                let intersection_circle = intersectionLineCircle({ x1: pSide.x2, y1: pSide.y2, x2: directorVector.x, y2: directorVector.y }, { x: this.position.x, y: this.position.y, r: this.radius });
+
+                if (intersection_circle === null) {
+                    continue;
+                }
+
+                let directorVector_ic_i = { x: intersection.x - intersection_circle.x, y: intersection.y - intersection_circle.y };
+                let result_point = { x: pSide.x2 + directorVector_ic_i.x, y: pSide.y2 + directorVector_ic_i.y };
+
+                let distance_intersection = Math.sqrt(Math.pow(result_point.x - this.position.x, 2) + Math.pow(result_point.y - this.position.y, 2));
+                let distance_nextFrame = Math.sqrt(Math.pow(nextFramePosition.x - this.position.x, 2) + Math.pow(nextFramePosition.y - this.position.y, 2));
+
+                if (distance_intersection < distance_nextFrame) {
+                    result = { x: result_point.x, y: result_point.y, time: distance_intersection / distance_nextFrame };
+                }
+            }
+        }
+
+        if (result != null) {
+
+
+
+        }
+    }
+
     collision() {
         // for (let pong of objects.balls) {
         //     if (pong != this) {
@@ -165,7 +379,7 @@ export class Pong extends Playable {
         //     }
         // }
 
-        let nextFramePosition = { x: this.position.x + this.velocity.x, y: this.position.y + this.velocity.y};
+        let nextFramePosition = { x: this.position.x + this.velocity.x, y: this.position.y + this.velocity.y };
 
         for (let block of objects.blocks) {
             let totalDistance = Math.sqrt(Math.pow(block.position.x - this.position.x, 2) + Math.pow(block.position.y - this.position.y, 2));
@@ -179,94 +393,10 @@ export class Pong extends Playable {
                 continue;
             }
 
-            // # CCD
-            let origin, n1, n2 = block.closestSides(this.position);
-
-            // ## decide if there is a predominant side
-
-            let pSide = null;
-            
-            // evaluate the intersection of the trajectory with both sides origin -> n1 and origin -> n2
 
 
-            let intersection_n1 = intersectionOf({x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y}, {x1: this.position.x, y1: this.position.y, x2: nextFramePosition.x, y2: nextFramePosition.y});
-            let intersection_n2 = intersectionOf({x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y}, {x1: this.position.x, y1: this.position.y, x2: nextFramePosition.x, y2: nextFramePosition.y});
-            
-            let isPointInLine_n1 = isPointInLine(origin, n1, intersection_n1);
-            let isPointInLine_n2 = isPointInLine(origin, n2, intersection_n2);
 
-            if (isPointInLine_n1 && isPointInLine_n2) {
-                let distance_n1 = Math.sqrt(Math.pow(intersection_n1.x - this.position.x, 2) + Math.pow(intersection_n1.y - this.position.y, 2));
-                let distance_n2 = Math.sqrt(Math.pow(intersection_n2.x - this.position.x, 2) + Math.pow(intersection_n2.y - this.position.y, 2));
 
-                if (distance_n1 < distance_n2) {
-                    pSide = {x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y};
-                } else {
-                    pSide = {x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y};
-                }
-            } else if (isPointInLine_n1) {
-                pSide = {x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y};
-            } else if (isPointInLine_n2) {
-                pSide = {x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y};
-            } else {
-                let directorVector = {x: nextFramePosition.x - this.position.x, y: this.position.y - nextFramePosition.y};
-
-                // normalizing the director vector
-                let magnitude = Math.sqrt(Math.pow(directorVector.x, 2) + Math.pow(directorVector.y, 2));
-                directorVector.x /= magnitude;
-                directorVector.y /= magnitude;
-
-                let directorVectorLeft = {x: -directorVector.y, y: directorVector.x};
-                let directorVectorRight = {x: directorVector.y, y: -directorVector.x};
-
-                let positionLeftInitial = {x: this.position.x + directorVectorLeft.x, y: this.position.y + directorVectorLeft.y};
-                let positionRightInitial = {x: this.position.x + directorVectorRight.x, y: this.position.y + directorVectorRight.y};
-
-                let positionLeftFinal = {x: nextFramePosition.x + directorVectorLeft.x, y: nextFramePosition.y + directorVectorLeft.y};
-                let positionRightFinal = {x: nextFramePosition.x + directorVectorRight.x, y: nextFramePosition.y + directorVectorRight.y};
-
-                let intersectionLeft_n1 = intersectionOf({x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y}, {x1: positionLeftInitial.x, y1: positionLeftInitial.y, x2: positionLeftFinal.x, y2: positionLeftFinal.y});
-                let intersectionLeft_n2 = intersectionOf({x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y}, {x1: positionLeftInitial.x, y1: positionLeftInitial.y, x2: positionLeftFinal.x, y2: positionLeftFinal.y});
-
-                let intersectionRight_n1 = intersectionOf({x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y}, {x1: positionRightInitial.x, y1: positionRightInitial.y, x2: positionRightFinal.x, y2: positionRightFinal.y});
-                let intersectionRight_n2 = intersectionOf({x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y}, {x1: positionRightInitial.x, y1: positionRightInitial.y, x2: positionRightFinal.x, y2: positionRightFinal.y});
-
-                let isPointInLineLeft_n1 = isPointInLine(positionLeftInitial, positionLeftFinal, intersectionLeft_n1);
-                let isPointInLineLeft_n2 = isPointInLine(positionLeftInitial, positionLeftFinal, intersectionLeft_n2);
-
-                let isPointInLineRight_n1 = isPointInLine(positionRightInitial, positionRightFinal, intersectionRight_n1);
-                let isPointInLineRight_n2 = isPointInLine(positionRightInitial, positionRightFinal, intersectionRight_n2);
-
-                if (isPointInLineLeft_n1 && isPointInLineLeft_n2) {
-                    let distance_n1 = Math.sqrt(Math.pow(intersectionLeft_n1.x - this.position.x, 2) + Math.pow(intersectionLeft_n1.y - this.position.y, 2));
-                    let distance_n2 = Math.sqrt(Math.pow(intersectionLeft_n2.x - this.position.x, 2) + Math.pow(intersectionLeft_n2.y - this.position.y, 2));
-
-                    if (distance_n1 < distance_n2) {
-                        pSide = {x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y};
-                    } else {
-                        pSide = {x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y};
-                    }
-                } else if (isPointInLineLeft_n1) {
-                    pSide = {x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y};
-                } else if (isPointInLineLeft_n2) {
-                    pSide = {x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y};
-                } else if (isPointInLineRight_n1 && isPointInLineRight_n2) {
-                    let distance_n1 = Math.sqrt(Math.pow(intersectionRight_n1.x - this.position.x, 2) + Math.pow(intersectionRight_n1.y - this.position.y, 2));
-                    let distance_n2 = Math.sqrt(Math.pow(intersectionRight_n2.x - this.position.x, 2) + Math.pow(intersectionRight_n2.y - this.position.y, 2));
-
-                    if (distance_n1 < distance_n2) {
-                        pSide = {x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y};
-                    } else {
-                        pSide = {x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y};
-                    }
-                } else if (isPointInLineRight_n1) {
-                    pSide = {x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y};
-                } else if (isPointInLineRight_n2) {
-                    pSide = {x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y};
-                }
-            }
-
-            
 
 
 
