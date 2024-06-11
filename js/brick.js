@@ -30,6 +30,18 @@ export class Brick {
         return closest.corner;
     }
 
+    closestSides(position) {
+        let sides = [];
+
+        for (let corner in this.corners) {
+            let distance = Math.sqrt(Math.pow(this.corners[corner].x - position.x, 2) + Math.pow(this.corners[corner].y - position.y, 2));
+            sides.push({ corner: corner, distance: distance })
+        }
+
+        sides.sort((a, b) => a.distance - b.distance);
+        return sides.slice(0, 3);
+    }
+
     break() {
         let index = objects.blocks.indexOf(this);
         if (index > -1) {
