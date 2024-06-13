@@ -72,7 +72,7 @@ export class GameLoop {
         // objects.balls.push(new Pong(125, 125, 5, 5, 5));
 
         // objects.blocks.push(new Brick(100, 150, 20, 10));
-        // objects.blocks.push(new Brick(150, 100, 10, 10));
+        // objects.blocks.push(new Brick(180, 100, 10, 10));
 
         let minX = 30;
         let maxX = 280;
@@ -132,7 +132,7 @@ export class GameLoop {
         });
 
         if (this.cooldown <= 0) {
-            this.cooldown = 0.40;
+            this.cooldown = 0.00;
         }
         this.cooldown -= delta;
 
