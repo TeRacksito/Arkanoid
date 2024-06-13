@@ -118,6 +118,12 @@ export class PlayerBar extends Playable {
     }
 
     draw() {
+
+        bufferContext.fillStyle = '#00F';
+        bufferContext.beginPath();
+        bufferContext.arc(this.position.x , this.position.y, this.radius , 0, 2 * Math.PI);
+        bufferContext.fill();
+
         bufferContext.fillStyle = '#fff';
         bufferContext.fillRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
     }

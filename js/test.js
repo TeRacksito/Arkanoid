@@ -1,4 +1,6 @@
 import { bufferContext, canvas, bufferCanvas, bufferW, bufferH, mousePos } from "./ctr.js";
+import { Brick } from "./brick.js";
+import { PlayerBar } from "./playerBar.js";
 
 export class Playable {
     constructor(x, y, sx, sy) {
@@ -308,7 +310,7 @@ export class Pong extends Playable {
 
     blockComputeCC(block, init_time = 0) {
         // # CCD
-        let nextFramePosition = { x: this.position.x + this.velocity.x * (1 - init_time), y: this.position.y + this.velocity.y * (1 - init_time) };
+        // let nextFramePosition = { x: this.position.x + this.velocity.x * (1 - init_time), y: this.position.y + this.velocity.y * (1 - init_time) };
         let [origin, n1, n2] = block.closestSides(this.position);
 
         // ## decide if there is a predominant side
@@ -424,7 +426,7 @@ export class Pong extends Playable {
 
                 if (distance_intersection > distance_nextFrame) {
                     // result = { x: intersection.x, y: intersection.y, time: distance_intersection / distance_nextFrame };
-                    return { x: nextFramePosition.x, y: nextFramePosition.y, xs: this.velocity.x, ys: this.velocity.y, time: 1 };
+                    return null;
                 }
 
                 let unitVector = { x: pSide.x2 - origin.x, y: pSide.y2 - origin.y };
@@ -442,7 +444,7 @@ export class Pong extends Playable {
 
             } else if (pointInLine < 0) {
 
-                return this.cornerCollisionResult(nextFramePosition, origin, intersection, block) || { x: nextFramePosition.x, y: nextFramePosition.y, xs: this.velocity.x, ys: this.velocity.y, time: 1 };
+                return this.cornerCollisionResult(nextFramePosition, origin, intersection, block) || null;
 
             } else if (pointInLine > 1) {
                 // let directorVector = { x: nextFramePosition.x - this.position.x, y: this.position.y - nextFramePosition.y };
@@ -462,11 +464,11 @@ export class Pong extends Playable {
                 // if (distance_intersection < distance_nextFrame) {
                 //     result = { x: result_point.x, y: result_point.y, time: distance_intersection / distance_nextFrame };
                 // }
-                return this.cornerCollisionResult(nextFramePosition, { x: pSide.x2, y: pSide.y2 }, intersection, block) || { x: nextFramePosition.x, y: nextFramePosition.y, xs: this.velocity.x, ys: this.velocity.y, time: 1 };
+                return this.cornerCollisionResult(nextFramePosition, { x: pSide.x2, y: pSide.y2 }, intersection, block) || null;
             }
         }
 
-        return { x: nextFramePosition.x, y: nextFramePosition.y, xs: this.velocity.x, ys: this.velocity.y, time: 1 };
+        return null;
     }
 
     // blockContinuousCollision(init_time = 0) {
@@ -496,6 +498,78 @@ export class Pong extends Playable {
         // }
 
         let time = 0;
+        let iteration = 0;
+
+        // console.log(objects.blocks[0] instanceof Brick);
+
+        while (time < 1) {
+            let closeObjects = {};
+
+            let nextFramePosition = { x: this.position.x + this.velocity.x * (1 - time), y: this.position.y + this.velocity.y * (1 - time) };
+            let vector = { x: nextFramePosition.x - this.position.x, y: nextFramePosition.y - this.position.y };
+            let areaEffectRadius = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2)) + this.radius + 1;
+
+            for (let block of objects.blocks) {
+                let distance = Math.sqrt(Math.pow(block.position.x - this.position.x, 2) + Math.pow(block.position.y - this.position.y, 2));
+                if (distance < areaEffectRadius + block.radius) {
+                    closeObjects[block] = distance;
+                }
+            }
+
+            for (let player of objects.player) {
+                let distance = Math.sqrt(Math.pow(player.position.x - areaEffectPosition.x, 2) + Math.pow(player.position.y - areaEffectPosition.y, 2));
+                if (distance < areaEffectRadius + player.radius) {
+                    closeObjects[player] = distance;
+                }
+            }
+
+            let sortedObjects = Object.keys(closeObjects).sort((a, b) => closeObjects[a] - closeObjects[b]);
+
+            let result = null;
+            let collidingObject = null;
+
+            for (let object of sortedObjects) {
+                if (object === this.lastCollidingObject) continue;
+
+                if (object instanceof Brick) {
+                    result = this.blockComputeCC(object, time);
+                }
+
+                if (result != null) {
+                    collidingObject = object;
+                    break;
+                }
+            }
+
+            if (result === null) {
+                this.position.x = nextFramePosition.x;
+                this.position.y = nextFramePosition.y;
+                break;
+            } else {
+                this.lastCollidingObject = collidingObject;
+                this.position.x = result.x;
+                this.position.y = result.y;
+                let newVelocity = vectorWithMagnitudeAndDirection(this.velocity.x, this.velocity.y, result.xs, result.ys);
+                this.velocity.x = newVelocity.x;
+                this.velocity.y = newVelocity.y;
+                time = result.time;
+            }
+
+            iteration++;
+
+            if (iteration > 10) {
+                break;
+            }
+        }
+
+
+
+
+
+
+
+
+
         for (let block of objects.blocks) {
             let totalDistance = Math.sqrt(Math.pow(block.position.x - this.position.x, 2) + Math.pow(block.position.y - this.position.y, 2));
             if (totalDistance > this.radius + block.radius) {
@@ -767,6 +841,11 @@ export class Pong extends Playable {
     }
 
     draw() {
+        bufferContext.fillStyle = '#00F';
+        bufferContext.beginPath();
+        bufferContext.arc(this.position.x + this.velocity.x, this.position.y + this.velocity.y, this.radius, 0, 2 * Math.PI);
+        bufferContext.fill();
+
         bufferContext.fillStyle = this.color;
         bufferContext.beginPath();
         bufferContext.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
