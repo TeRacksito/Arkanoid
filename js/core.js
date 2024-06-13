@@ -64,20 +64,28 @@ export class GameLoop {
         //     objects.balls.push(pong);
         // }
 
-        // objects.balls.push(new Pong(160, 120, 0, -2, 5));
+        objects.balls.push(new Pong(160, 120, 5, -5, 5));
 
-        // let minX = 30;
-        // let maxX = 280;
-        // let cols = 20;
-        // let rows = 10;
-        // for (let i = 0; i < cols; i++) {
-        //     for (let j = 0; j < rows; j++) {
-        //         let x = minX + (maxX - minX) / cols * i + (rows - j) % 2 * 10;
-        //         let y = 20 + 7 * j;
-        //         let brick = new Brick(x, y, 10, 4);
-        //         objects.blocks.push(brick);
-        //     }
-        // }
+        // objects.blocks.push(new Brick(92, 100, 10, 10));
+        // objects.blocks.push(new Brick(108, 100, 10, 10));
+
+        // objects.balls.push(new Pong(125, 125, 5, 5, 5));
+
+        // objects.blocks.push(new Brick(100, 150, 20, 10));
+        // objects.blocks.push(new Brick(150, 100, 10, 10));
+
+        let minX = 30;
+        let maxX = 280;
+        let cols = 20;
+        let rows = 10;
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                let x = minX + (maxX - minX) / cols * i + (rows - j) % 2 * 10;
+                let y = 20 + 7 * j;
+                let brick = new Brick(x, y, 10, 4);
+                objects.blocks.push(brick);
+            }
+        }
 
         // let brick = new Brick(160, 120, 20, 10);
         // objects.blocks.push(brick);
@@ -124,7 +132,7 @@ export class GameLoop {
         });
 
         if (this.cooldown <= 0) {
-            this.cooldown = 0.0;
+            this.cooldown = 0.40;
         }
         this.cooldown -= delta;
 

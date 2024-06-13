@@ -35,11 +35,11 @@ export class Brick {
 
         for (let corner in this.corners) {
             let distance = Math.sqrt(Math.pow(this.corners[corner].x - position.x, 2) + Math.pow(this.corners[corner].y - position.y, 2));
-            sides.push({ corner: corner, distance: distance })
+            sides.push({ corner: this.corners[corner], distance: distance })
         }
 
         sides.sort((a, b) => a.distance - b.distance);
-        return sides.slice(0, 3);
+        return sides.slice(0, 3).map(side => side.corner);
     }
 
     break() {
@@ -51,7 +51,15 @@ export class Brick {
     }
 
     draw() {
+        bufferContext.fillStyle = '#040';
+        bufferContext.beginPath();
+        bufferContext.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
+        bufferContext.fill();
+
+        
         bufferContext.fillStyle = '#fff';
         bufferContext.fillRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+
+
     }
 }

@@ -93,29 +93,50 @@ function isPointInSemiline(startPoint, throughPoint, testPoint) {
     return true;
 }
 
+// function isPointInLine(startPoint, endPoint, testPoint) {
+//     const { x: x1, y: y1 } = startPoint;
+//     const { x: x2, y: y2 } = endPoint;
+//     const { x: x3, y: y3 } = testPoint;
+
+//     let slope1 = ((y2 - y1) / (x2 - x1));
+//     let slope2 = (y3 - y1) / (x3 - x1);
+
+//     let abs_slope1 = Math.abs(slope1);
+//     let abs_slope2 = Math.abs(slope2);
+
+//     // float point precision issue workaround
+//     if (slope1 != slope2 && (Math.round(slope1) != Math.round(slope2) || Math.max(abs_slope1, abs_slope2) - Math.min(abs_slope1, abs_slope2) > 0.000001)) {
+//         return false;
+//     }
+
+//     let r = (x3 - x1) / (x2 - x3);
+
+//     if (r < 0) {
+//         return false;
+//     }
+
+//     return true;
+// }
+
 function isPointInLine(startPoint, endPoint, testPoint) {
     const { x: x1, y: y1 } = startPoint;
     const { x: x2, y: y2 } = endPoint;
     const { x: x3, y: y3 } = testPoint;
 
-    let slope1 = ((y2 - y1) / (x2 - x1));
-    let slope2 = (y3 - y1) / (x3 - x1);
+    function crossProduct(x1, y1, x2, y2) {
+        return x1 * y2 - y1 * x2;
+    }
 
-    let abs_slope1 = Math.abs(slope1);
-    let abs_slope2 = Math.abs(slope2);
+    const crossProd = crossProduct(x3 - x1, y3 - y1, x2 - x1, y2 - y1);
 
-    // float point precision issue workaround
-    if (slope1 != slope2 && (Math.round(slope1) != Math.round(slope2) || Math.max(abs_slope1, abs_slope2) - Math.min(abs_slope1, abs_slope2) > 0.000001)) {
+    if (Math.abs(crossProd) > 0.000001) {
         return false;
     }
 
-    let r = (x3 - x1) / (x2 - x3);
+    const withinXBounds = (Math.min(x1, x2) <= x3 && x3 <= Math.max(x1, x2));
+    const withinYBounds = (Math.min(y1, y2) <= y3 && y3 <= Math.max(y1, y2));
 
-    if (r < 0) {
-        return false;
-    }
-
-    return true;
+    return withinXBounds && withinYBounds;
 }
 
 function PointInLine(startPoint, endPoint, testPoint) {
@@ -123,27 +144,86 @@ function PointInLine(startPoint, endPoint, testPoint) {
     const { x: x2, y: y2 } = endPoint;
     const { x: x3, y: y3 } = testPoint;
 
-    let slope1 = ((y2 - y1) / (x2 - x1));
-    let slope2 = (y3 - y1) / (x3 - x1);
+    function crossProduct(x1, y1, x2, y2) {
+        return x1 * y2 - y1 * x2;
+    }
 
-    let abs_slope1 = Math.abs(slope1);
-    let abs_slope2 = Math.abs(slope2);
+    const crossProd = crossProduct(x3 - x1, y3 - y1, x2 - x1, y2 - y1);
 
-    // float point precision issue workaround
-    if (slope1 != slope2 && (Math.round(slope1) != Math.round(slope2) || Math.max(abs_slope1, abs_slope2) - Math.min(abs_slope1, abs_slope2) > 0.000001)) {
+    if (Math.abs(crossProd) > 0.000001) {
         return null;
     }
 
-    let r = (x3 - x1) / (x2 - x3);
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    let r;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        r = (x3 - x1) / dx;
+    } else {
+        r = (y3 - y1) / dy;
+    }
+
     return r;
 }
+
+// function PointInLine(startPoint, endPoint, testPoint) {
+//     const { x: x1, y: y1 } = startPoint;
+//     const { x: x2, y: y2 } = endPoint;
+//     const { x: x3, y: y3 } = testPoint;
+
+//     let slope1 = ((y2 - y1) / (x2 - x1));
+//     let slope2 = (y3 - y1) / (x3 - x1);
+
+//     let abs_slope1 = Math.abs(slope1);
+//     let abs_slope2 = Math.abs(slope2);
+
+//     // float point precision issue workaround
+//     if (slope1 != slope2 && (Math.round(slope1) != Math.round(slope2) || Math.max(abs_slope1, abs_slope2) - Math.min(abs_slope1, abs_slope2) > 0.000001)) {
+//         return null;
+//     }
+
+//     let r = (x3 - x1) / (x2 - x3);
+//     return r;
+// }
+
+function reflectVector(v, l) {
+    const dotProduct = v.x * l.x + v.y * l.y;
+
+    const projection = { x: dotProduct * l.x, y: dotProduct * l.y };
+
+    const vPerpendicular = { x: v.x - projection.x, y: v.y - projection.y };
+
+    const reflectedVector = { x: v.x - 2 * vPerpendicular.x, y: v.y - 2 * vPerpendicular.y };
+
+    return reflectedVector;
+}
+
+function vectorWithMagnitudeAndDirection(x1, y1, x2, y2) {
+    const magnitude1 = Math.sqrt(x1 * x1 + y1 * y1);
+
+    const magnitude2 = Math.sqrt(x2 * x2 + y2 * y2);
+
+    if (magnitude2 === 0) {
+        return { x: x1, y: y1 };
+    }
+
+    const unitX2 = x2 / magnitude2;
+    const unitY2 = y2 / magnitude2;
+
+    const resultX = unitX2 * magnitude1;
+    const resultY = unitY2 * magnitude1;
+
+    return { x: resultX, y: resultY };
+}
+
 
 
 export class Pong extends Playable {
 
     colliding = false;
     BlockColliding = false;
-    color = "#fff"
+    color = "#f00"
 
     constructor(x, y, sx, sy, radius) {
         super(x, y, sx, sy);
@@ -195,9 +275,41 @@ export class Pong extends Playable {
         return deviation;
     }
 
-    blockContinuosCollision(block) {
+    cornerCollisionResult(nextFramePosition, origin, intersection, block) {
+        let directorVector = { x: nextFramePosition.x - this.position.x, y: nextFramePosition.y - this.position.y };
+
+        let intersection_circle = intersectionLineCircle({ x1: origin.x, y1: origin.y, x2: directorVector.x, y2: directorVector.y }, { x: intersection.x, y: intersection.y, r: this.radius });
+
+        if (intersection_circle === null) {
+            return null;
+        }
+
+        let directorVector_ic_i = { x: intersection.x - intersection_circle.x, y: intersection.y - intersection_circle.y };
+        let result_point = { x: origin.x + directorVector_ic_i.x, y: origin.y + directorVector_ic_i.y };
+
+        let distance_intersection = Math.sqrt(Math.pow(result_point.x - this.position.x, 2) + Math.pow(result_point.y - this.position.y, 2));
+        let distance_nextFrame = Math.sqrt(Math.pow(nextFramePosition.x - this.position.x, 2) + Math.pow(nextFramePosition.y - this.position.y, 2));
+
+        if (distance_intersection > distance_nextFrame) {
+            // result = { x: result_point.x, y: result_point.y, time: distance_intersection / distance_nextFrame };
+            return null;
+        }
+
+        let directorVEctor_point = { x: nextFramePosition.x - result_point.x, y: nextFramePosition.y - result_point.y };
+
+        let q = - (2 * ((directorVEctor_point.x) * (result_point.x - origin.x) + directorVEctor_point.y * (result_point.y - origin.y))) / (Math.pow(this.radius, 2));
+
+        directorVEctor_point.x += q * (result_point.x - origin.x);
+        directorVEctor_point.y += q * (result_point.y - origin.y);
+
+        block.break();
+        return { x: result_point.x, y: result_point.y, xs: directorVEctor_point.x, ys: directorVEctor_point.y, time: distance_intersection / distance_nextFrame };
+    }
+
+    blockComputeCC(block, init_time = 0) {
         // # CCD
-        let origin, n1, n2 = block.closestSides(this.position);
+        let nextFramePosition = { x: this.position.x + this.velocity.x * (1 - init_time), y: this.position.y + this.velocity.y * (1 - init_time) };
+        let [origin, n1, n2] = block.closestSides(this.position);
 
         // ## decide if there is a predominant side
 
@@ -210,8 +322,8 @@ export class Pong extends Playable {
         let intersection_n1 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y }, { x1: this.position.x, y1: this.position.y, x2: nextFramePosition.x, y2: nextFramePosition.y });
         let intersection_n2 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y }, { x1: this.position.x, y1: this.position.y, x2: nextFramePosition.x, y2: nextFramePosition.y });
 
-        let isPointInLine_n1 = isPointInLine(origin, n1, intersection_n1);
-        let isPointInLine_n2 = isPointInLine(origin, n2, intersection_n2);
+        let isPointInLine_n1 = intersection_n1 != null ? isPointInLine(origin, n1, intersection_n1) : false;
+        let isPointInLine_n2 = intersection_n2 != null ? isPointInLine(origin, n2, intersection_n2) : false;
 
         if (isPointInLine_n1 && isPointInLine_n2) {
             let distance_n1 = Math.sqrt(Math.pow(intersection_n1.x - this.position.x, 2) + Math.pow(intersection_n1.y - this.position.y, 2));
@@ -227,7 +339,7 @@ export class Pong extends Playable {
         } else if (isPointInLine_n2) {
             pSide = pSide_n2;
         } else {
-            let directorVector = { x: nextFramePosition.x - this.position.x, y: this.position.y - nextFramePosition.y };
+            let directorVector = { x: nextFramePosition.x - this.position.x, y: nextFramePosition.y - this.position.y };
 
             // normalizing the director vector
             let magnitude = Math.sqrt(Math.pow(directorVector.x, 2) + Math.pow(directorVector.y, 2));
@@ -252,11 +364,11 @@ export class Pong extends Playable {
             let intersectionRight_n1 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n1.x, y2: n1.y }, { x1: positionRightInitial.x, y1: positionRightInitial.y, x2: positionRightFinal.x, y2: positionRightFinal.y });
             let intersectionRight_n2 = intersectionOf({ x1: origin.x, y1: origin.y, x2: n2.x, y2: n2.y }, { x1: positionRightInitial.x, y1: positionRightInitial.y, x2: positionRightFinal.x, y2: positionRightFinal.y });
 
-            let isPointInLineLeft_n1 = isPointInLine(positionLeftInitial, positionLeftFinal, intersectionLeft_n1);
-            let isPointInLineLeft_n2 = isPointInLine(positionLeftInitial, positionLeftFinal, intersectionLeft_n2);
+            let isPointInLineLeft_n1 = intersectionLeft_n1 != null ? isPointInLine(origin, n1, intersectionLeft_n1) : false;
+            let isPointInLineLeft_n2 = intersectionLeft_n2 != null ? isPointInLine(origin, n2, intersectionLeft_n2) : false;
 
-            let isPointInLineRight_n1 = isPointInLine(positionRightInitial, positionRightFinal, intersectionRight_n1);
-            let isPointInLineRight_n2 = isPointInLine(positionRightInitial, positionRightFinal, intersectionRight_n2);
+            let isPointInLineRight_n1 = intersectionRight_n1 != null ? isPointInLine(origin, n1, intersectionRight_n1) : false;
+            let isPointInLineRight_n2 = intersectionRight_n2 != null ? isPointInLine(origin, n2, intersectionRight_n2) : false;
 
             if (isPointInLineLeft_n1 && isPointInLineLeft_n2) {
                 let distance_n1 = Math.sqrt(Math.pow(intersectionLeft_n1.x - this.position.x, 2) + Math.pow(intersectionLeft_n1.y - this.position.y, 2));
@@ -287,10 +399,8 @@ export class Pong extends Playable {
             }
         }
 
-        let result = null;
-
         if (pSide != null) {
-            let directorVector_O_n = { x: x3 - x1, y: y3 - y1 };
+            let directorVector_O_n = { x: pSide.x3 - pSide.x1, y: pSide.y3 - pSide.y1 };
 
             // normalizing the director vector
             let magnitude = Math.sqrt(Math.pow(directorVector_O_n.x, 2) + Math.pow(directorVector_O_n.y, 2));
@@ -300,64 +410,70 @@ export class Pong extends Playable {
             directorVector_O_n.x *= this.radius;
             directorVector_O_n.y *= this.radius;
 
+            directorVector_O_n = { x: -directorVector_O_n.x, y: -directorVector_O_n.y };
+
             let origin_margin = { x: origin.x + directorVector_O_n.x, y: origin.y + directorVector_O_n.y };
             let n_margin = { x: pSide.x2 + directorVector_O_n.x, y: pSide.y2 + directorVector_O_n.y };
 
             let intersection = intersectionOf({ x1: origin_margin.x, y1: origin_margin.y, x2: n_margin.x, y2: n_margin.y }, { x1: this.position.x, y1: this.position.y, x2: nextFramePosition.x, y2: nextFramePosition.y });
             let pointInLine = PointInLine(origin_margin, n_margin, intersection);
 
-            if (pointInLine >= 0) {
+            if (pointInLine >= 0 && pointInLine <= 1) {
                 let distance_intersection = Math.sqrt(Math.pow(intersection.x - this.position.x, 2) + Math.pow(intersection.y - this.position.y, 2));
                 let distance_nextFrame = Math.sqrt(Math.pow(nextFramePosition.x - this.position.x, 2) + Math.pow(nextFramePosition.y - this.position.y, 2));
 
-                if (distance_intersection < distance_nextFrame) {
-                    result = { x: intersection.x, y: intersection.y, time: distance_intersection / distance_nextFrame };
-                }
-            } else if (pointInLine < 0 && pointInLine > -1) {
-                let directorVector = { x: nextFramePosition.x - this.position.x, y: this.position.y - nextFramePosition.y };
-
-                let intersection_circle = intersectionLineCircle({ x1: origin.x, y1: origin.y, x2: directorVector.x, y2: directorVector.y }, { x: this.position.x, y: this.position.y, r: this.radius });
-
-                if (intersection_circle === null) {
-                    continue;
+                if (distance_intersection > distance_nextFrame) {
+                    // result = { x: intersection.x, y: intersection.y, time: distance_intersection / distance_nextFrame };
+                    return { x: nextFramePosition.x, y: nextFramePosition.y, xs: this.velocity.x, ys: this.velocity.y, time: 1 };
                 }
 
-                let directorVector_ic_i = { x: intersection.x - intersection_circle.x, y: intersection.y - intersection_circle.y };
-                let result_point = { x: origin.x + directorVector_ic_i.x, y: origin.y + directorVector_ic_i.y };
+                let unitVector = { x: pSide.x2 - origin.x, y: pSide.y2 - origin.y };
+                let magnitude = Math.sqrt(Math.pow(unitVector.x, 2) + Math.pow(unitVector.y, 2));
+                unitVector.x /= magnitude;
+                unitVector.y /= magnitude;
+                unitVector = { x: unitVector.y, y: -unitVector.x };
 
-                let distance_intersection = Math.sqrt(Math.pow(result_point.x - this.position.x, 2) + Math.pow(result_point.y - this.position.y, 2));
-                let distance_nextFrame = Math.sqrt(Math.pow(nextFramePosition.x - this.position.x, 2) + Math.pow(nextFramePosition.y - this.position.y, 2));
+                let nextFP_InterVector = { x: intersection.x - nextFramePosition.x, y: intersection.y - nextFramePosition.y };
 
-                if (distance_intersection < distance_nextFrame) {
-                    result = { x: result_point.x, y: result_point.y, time: distance_intersection / distance_nextFrame };
-                }
-            } else if (pointInLine < 0 && pointInLine < -1) {
-                let directorVector = { x: nextFramePosition.x - this.position.x, y: this.position.y - nextFramePosition.y };
+                let nextFPVector = reflectVector(nextFP_InterVector, unitVector);
 
-                let intersection_circle = intersectionLineCircle({ x1: pSide.x2, y1: pSide.y2, x2: directorVector.x, y2: directorVector.y }, { x: this.position.x, y: this.position.y, r: this.radius });
+                block.break();
+                return { x: intersection.x, y: intersection.y, xs: nextFPVector.x, ys: nextFPVector.y, time: distance_intersection / distance_nextFrame };
 
-                if (intersection_circle === null) {
-                    continue;
-                }
+            } else if (pointInLine < 0) {
 
-                let directorVector_ic_i = { x: intersection.x - intersection_circle.x, y: intersection.y - intersection_circle.y };
-                let result_point = { x: pSide.x2 + directorVector_ic_i.x, y: pSide.y2 + directorVector_ic_i.y };
+                return this.cornerCollisionResult(nextFramePosition, origin, intersection, block) || { x: nextFramePosition.x, y: nextFramePosition.y, xs: this.velocity.x, ys: this.velocity.y, time: 1 };
 
-                let distance_intersection = Math.sqrt(Math.pow(result_point.x - this.position.x, 2) + Math.pow(result_point.y - this.position.y, 2));
-                let distance_nextFrame = Math.sqrt(Math.pow(nextFramePosition.x - this.position.x, 2) + Math.pow(nextFramePosition.y - this.position.y, 2));
+            } else if (pointInLine > 1) {
+                // let directorVector = { x: nextFramePosition.x - this.position.x, y: this.position.y - nextFramePosition.y };
 
-                if (distance_intersection < distance_nextFrame) {
-                    result = { x: result_point.x, y: result_point.y, time: distance_intersection / distance_nextFrame };
-                }
+                // let intersection_circle = intersectionLineCircle({ x1: pSide.x2, y1: pSide.y2, x2: directorVector.x, y2: directorVector.y }, { x: this.position.x, y: this.position.y, r: this.radius });
+
+                // if (intersection_circle === null) {
+                //     return result;
+                // }
+
+                // let directorVector_ic_i = { x: intersection.x - intersection_circle.x, y: intersection.y - intersection_circle.y };
+                // let result_point = { x: pSide.x2 + directorVector_ic_i.x, y: pSide.y2 + directorVector_ic_i.y };
+
+                // let distance_intersection = Math.sqrt(Math.pow(result_point.x - this.position.x, 2) + Math.pow(result_point.y - this.position.y, 2));
+                // let distance_nextFrame = Math.sqrt(Math.pow(nextFramePosition.x - this.position.x, 2) + Math.pow(nextFramePosition.y - this.position.y, 2));
+
+                // if (distance_intersection < distance_nextFrame) {
+                //     result = { x: result_point.x, y: result_point.y, time: distance_intersection / distance_nextFrame };
+                // }
+                return this.cornerCollisionResult(nextFramePosition, { x: pSide.x2, y: pSide.y2 }, intersection, block) || { x: nextFramePosition.x, y: nextFramePosition.y, xs: this.velocity.x, ys: this.velocity.y, time: 1 };
             }
         }
 
-        if (result != null) {
-
-
-
-        }
+        return { x: nextFramePosition.x, y: nextFramePosition.y, xs: this.velocity.x, ys: this.velocity.y, time: 1 };
     }
+
+    // blockContinuousCollision(init_time = 0) {
+
+
+
+    // }
 
     collision() {
         // for (let pong of objects.balls) {
@@ -379,8 +495,7 @@ export class Pong extends Playable {
         //     }
         // }
 
-        let nextFramePosition = { x: this.position.x + this.velocity.x, y: this.position.y + this.velocity.y };
-
+        let time = 0;
         for (let block of objects.blocks) {
             let totalDistance = Math.sqrt(Math.pow(block.position.x - this.position.x, 2) + Math.pow(block.position.y - this.position.y, 2));
             if (totalDistance > this.radius + block.radius) {
@@ -393,13 +508,20 @@ export class Pong extends Playable {
                 continue;
             }
 
+            this.testtest = false;
 
+            let result = this.blockComputeCC(block, time);
 
+            this.position.x = result.x;
+            this.position.y = result.y;
+            let newVelocity = vectorWithMagnitudeAndDirection(this.velocity.x, this.velocity.y, result.xs, result.ys);
+            this.velocity.x = newVelocity.x;
+            this.velocity.y = newVelocity.y;
+            time = result.time;
 
-
-
-
-
+            if (time >= 1) {
+                break;
+            }
             // // block vertical collision
             // if (this.position.x > block.position.x - block.width / 2 && this.position.x < block.position.x + block.width / 2) {
             //     let yDistance = Math.abs(this.position.y - block.position.y);
@@ -471,129 +593,133 @@ export class Pong extends Playable {
         //     }
         // }
 
-        for (let player of objects.player) {
+        // for (let player of objects.player) {
 
-            let totalDistance = Math.sqrt(Math.pow(player.position.x - this.position.x, 2) + Math.pow(player.position.y - this.position.y, 2));
-            if (totalDistance > this.radius + player.radius) {
-                this.colliding = false;
-                continue;
-            }
+        //     let totalDistance = Math.sqrt(Math.pow(player.position.x - this.position.x, 2) + Math.pow(player.position.y - this.position.y, 2));
+        //     if (totalDistance > this.radius + player.radius) {
+        //         this.colliding = false;
+        //         continue;
+        //     }
 
-            if (this.colliding) {
-                // console.log("colliding");
-                continue;
-            }
+        //     if (this.colliding) {
+        //         // console.log("colliding");
+        //         continue;
+        //     }
 
-            if (this.position.y < player.position.y && this.position.x < (player.position.x + player.width / 2 + 1) && this.position.x > (player.position.x - player.width / 2 - 1)) {
-                let distance = Math.abs(this.position.y - player.position.y);
-                if (distance < this.radius + player.height / 2) {
-                    let overlap = this.radius + player.height / 2 - distance;
-                    this.position.y -= overlap;
-                    this.velocity.y *= -1;
-                    let deviation = 0;
-                    if (player.velocity.x > 0) {
-                        deviation = Math.pow(Math.E, -(1 / player.velocity.x)) / 2;
-                    } else if (player.velocity.x < 0) {
-                        deviation = -Math.pow(Math.E, -(1 / -player.velocity.x)) / 2;
-                    }
+        //     if (this.position.y < player.position.y && this.position.x < (player.position.x + player.width / 2 + 1) && this.position.x > (player.position.x - player.width / 2 - 1)) {
+        //         let distance = Math.abs(this.position.y - player.position.y);
+        //         if (distance < this.radius + player.height / 2) {
+        //             let overlap = this.radius + player.height / 2 - distance;
+        //             this.position.y -= overlap;
+        //             this.velocity.y *= -1;
+        //             let deviation = 0;
+        //             if (player.velocity.x > 0) {
+        //                 deviation = Math.pow(Math.E, -(1 / player.velocity.x)) / 2;
+        //             } else if (player.velocity.x < 0) {
+        //                 deviation = -Math.pow(Math.E, -(1 / -player.velocity.x)) / 2;
+        //             }
 
-                    // console.log("deviation", deviation, player.velocity.x);
+        //             // console.log("deviation", deviation, player.velocity.x);
 
-                    deviation += 1 / 3 * ((this.position.x - player.position.x) / (player.width / 2));
+        //             deviation += 1 / 3 * ((this.position.x - player.position.x) / (player.width / 2));
 
-                    let angle = this.getAngle();
+        //             let angle = this.getAngle();
 
-                    let newAngle = angle + deviation;
+        //             let newAngle = angle + deviation;
 
-                    let newDeviation = this.limitHorizontalDeviation(angle, newAngle, deviation);
+        //             let newDeviation = this.limitHorizontalDeviation(angle, newAngle, deviation);
 
-                    // console.log(newAngle, newAngle * (180 / Math.PI));
-
-
-
-                    // if (newAngle < Math.PI / 6) {
-                    //     deviation = - angle + Math.PI / 6;
-                    //     // console.log("Limiting deviation to 30 degrees");
-                    // } else if (newAngle > 5 * Math.PI / 6) {
-                    //     deviation = - 5 * Math.PI / 6 + angle;
-                    //     // console.log("Limiting deviation to 150 degrees");
-                    // }
+        //             // console.log(newAngle, newAngle * (180 / Math.PI));
 
 
-                    this.rotate(newDeviation);
 
-                    let tempAngle = this.getAngle();
-
-                    // console.log(
-                    //     "angle", (angle * (180 / Math.PI)).toFixed(2),
-                    //     angle.toFixed(2),
-                    //     "\ndeviation", (deviation * (180 / Math.PI)).toFixed(2),
-                    //     deviation.toFixed(2),
-                    //     "\nnewDeviation", (newDeviation * (180 / Math.PI)).toFixed(2),
-                    //     newDeviation.toFixed(2),
-                    //     "\nnewAngle", (newAngle * (180 / Math.PI)).toFixed(2),
-                    //     newAngle.toFixed(2),
-                    //     "\ntempAngle", (tempAngle * (180 / Math.PI)).toFixed(2),
-                    //     tempAngle.toFixed(2)
-                    // );
-
-                    // let temp = { x: this.velocity.x, y: this.velocity.y };
-                    // temp.x = this.velocity.x * Math.cos(deviation) - this.velocity.y * Math.sin(deviation);
-                    // temp.y = this.velocity.x * Math.sin(deviation) + this.velocity.y * Math.cos(deviation);
-
-                    // this.velocity.x = temp.x;
-                    // this.velocity.y = temp.y;
+        //             // if (newAngle < Math.PI / 6) {
+        //             //     deviation = - angle + Math.PI / 6;
+        //             //     // console.log("Limiting deviation to 30 degrees");
+        //             // } else if (newAngle > 5 * Math.PI / 6) {
+        //             //     deviation = - 5 * Math.PI / 6 + angle;
+        //             //     // console.log("Limiting deviation to 150 degrees");
+        //             // }
 
 
-                    this.colliding = true;
-                }
+        //             this.rotate(newDeviation);
+
+        //             let tempAngle = this.getAngle();
+
+        //             // console.log(
+        //             //     "angle", (angle * (180 / Math.PI)).toFixed(2),
+        //             //     angle.toFixed(2),
+        //             //     "\ndeviation", (deviation * (180 / Math.PI)).toFixed(2),
+        //             //     deviation.toFixed(2),
+        //             //     "\nnewDeviation", (newDeviation * (180 / Math.PI)).toFixed(2),
+        //             //     newDeviation.toFixed(2),
+        //             //     "\nnewAngle", (newAngle * (180 / Math.PI)).toFixed(2),
+        //             //     newAngle.toFixed(2),
+        //             //     "\ntempAngle", (tempAngle * (180 / Math.PI)).toFixed(2),
+        //             //     tempAngle.toFixed(2)
+        //             // );
+
+        //             // let temp = { x: this.velocity.x, y: this.velocity.y };
+        //             // temp.x = this.velocity.x * Math.cos(deviation) - this.velocity.y * Math.sin(deviation);
+        //             // temp.y = this.velocity.x * Math.sin(deviation) + this.velocity.y * Math.cos(deviation);
+
+        //             // this.velocity.x = temp.x;
+        //             // this.velocity.y = temp.y;
 
 
-            } else if (this.position.y < (player.position.y + player.height / 2) && this.position.y > (player.position.y - player.height / 2)) {
-                // console.log("doingit");
-                let distance = Math.abs(this.position.x - player.position.x);
-                if (distance < this.radius + player.width / 2) {
-                    // let overlap = this.radius + player.width / 2 - distance;
-                    // this.position.x -= overlap;
-                    this.velocity.x = -this.velocity.x + player.velocity.x
-                    // this.velocity.x += player.velocity.x;
-                    this.colliding = true;
-                }
-            }
-            else {
-                let cornerName = player.closestCorner(this.position);
-                let corner = player.corners[cornerName];
+        //             this.colliding = true;
+        //         }
 
-                let distance = Math.sqrt(Math.pow(corner.x - this.position.x, 2) + Math.pow(corner.y - this.position.y, 2));
-                if (distance < this.radius) {
-                    let angle = Math.atan2(corner.y - this.position.y, corner.x - this.position.x);
-                    let overlap = this.radius - distance;
-                    this.position.x -= overlap * Math.cos(angle);
-                    this.position.y -= overlap * Math.sin(angle);
 
-                    let xVelocity = this.velocity.x;
+        //     } else if (this.position.y < (player.position.y + player.height / 2) && this.position.y > (player.position.y - player.height / 2)) {
+        //         // console.log("doingit");
+        //         let distance = Math.abs(this.position.x - player.position.x);
+        //         if (distance < this.radius + player.width / 2) {
+        //             // let overlap = this.radius + player.width / 2 - distance;
+        //             // this.position.x -= overlap;
+        //             this.velocity.x = -this.velocity.x + player.velocity.x
+        //             // this.velocity.x += player.velocity.x;
+        //             this.colliding = true;
+        //         }
+        //     }
+        //     else {
+        //         let cornerName = player.closestCorner(this.position);
+        //         let corner = player.corners[cornerName];
 
-                    let q = - (2 * ((xVelocity) * (this.position.x - corner.x) + this.velocity.y * (this.position.y - corner.y))) / (Math.pow(this.radius, 2));
+        //         let distance = Math.sqrt(Math.pow(corner.x - this.position.x, 2) + Math.pow(corner.y - this.position.y, 2));
+        //         if (distance < this.radius) {
+        //             let angle = Math.atan2(corner.y - this.position.y, corner.x - this.position.x);
+        //             let overlap = this.radius - distance;
+        //             this.position.x -= overlap * Math.cos(angle);
+        //             this.position.y -= overlap * Math.sin(angle);
 
-                    this.velocity.x += q * (this.position.x - corner.x);
-                    this.velocity.y += q * (this.position.y - corner.y);
-                    this.velocity.y = -Math.abs(this.velocity.y);
-                    this.colliding = true;
-                    // pausecomp(400);
-                }
-            }
-        }
+        //             let xVelocity = this.velocity.x;
+
+        //             let q = - (2 * ((xVelocity) * (this.position.x - corner.x) + this.velocity.y * (this.position.y - corner.y))) / (Math.pow(this.radius, 2));
+
+        //             this.velocity.x += q * (this.position.x - corner.x);
+        //             this.velocity.y += q * (this.position.y - corner.y);
+        //             this.velocity.y = -Math.abs(this.velocity.y);
+        //             this.colliding = true;
+        //             // pausecomp(400);
+        //         }
+        //     }
+        // }
 
 
     }
 
     update(delta) {
 
-        let maxSpeed = this.radius;
-        this.velocity.x = Math.min(maxSpeed, Math.max(-maxSpeed, this.velocity.x));
-        this.velocity.y = Math.min(maxSpeed, Math.max(-maxSpeed, this.velocity.y));
-        super.update();
+        // let maxSpeed = this.radius;
+        // this.velocity.x = Math.min(maxSpeed, Math.max(-maxSpeed, this.velocity.x));
+        // this.velocity.y = Math.min(maxSpeed, Math.max(-maxSpeed, this.velocity.y));
         this.collision();
+        if (this.testtest) {
+            super.update();
+        }
+        this.testtest = true;
+
 
         // this.velocity.x = Math.min(2, Math.max(-2, this.velocity.x));
         // this.velocity.y = Math.min(2, Math.max(-2, this.velocity.y));
@@ -626,13 +752,13 @@ export class Pong extends Playable {
         if (this.position.y - this.radius < 0) {
             this.position.y = 0 + this.radius;
             this.velocity.y = -this.velocity.y;
-        } else if (this.position.y + this.radius > 240) {
-            // this.position.y = 240 - this.radius;
-            // this.velocity.y = -this.velocity.y;
+        } else if (this.position.y + this.radius > 130) {
+            this.position.y = 130 - this.radius;
+            this.velocity.y = -this.velocity.y;
 
             let index = objects.balls.indexOf(this);
             if (index > -1) {
-                objects.balls.splice(index, 1);
+                // objects.balls.splice(index, 1);
                 console.log("Ball removed");
             }
         }
