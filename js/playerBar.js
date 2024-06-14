@@ -36,6 +36,19 @@ export class PlayerBar extends Playable {
         return closest.corner;
     }
 
+    closestSides(position) {
+        let sides = [];
+
+        for (let corner in this.corners) {
+            let distance = Math.sqrt(Math.pow(this.corners[corner].x - position.x, 2) + Math.pow(this.corners[corner].y - position.y, 2));
+            sides.push({ corner: this.corners[corner], distance: distance })
+        }
+
+        sides.sort((a, b) => a.distance - b.distance);
+        return sides.slice(0, 3).map(side => side.corner);
+    }
+
+
     closestBall() {
         let closest = { ball: null, distance: Infinity };
         objects.balls.forEach(ball => {
@@ -119,10 +132,10 @@ export class PlayerBar extends Playable {
 
     draw() {
 
-        bufferContext.fillStyle = '#00F';
-        bufferContext.beginPath();
-        bufferContext.arc(this.position.x , this.position.y, this.radius , 0, 2 * Math.PI);
-        bufferContext.fill();
+        // bufferContext.fillStyle = '#00F';
+        // bufferContext.beginPath();
+        // bufferContext.arc(this.position.x , this.position.y, this.radius , 0, 2 * Math.PI);
+        // bufferContext.fill();
 
         bufferContext.fillStyle = '#fff';
         bufferContext.fillRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);

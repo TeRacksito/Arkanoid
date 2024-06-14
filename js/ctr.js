@@ -85,7 +85,7 @@ function renderWorld(delta) {
     fadeCountdown -= delta;
 
     if (fadeCountdown < 0) {
-        bufferContext.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        bufferContext.fillStyle = 'rgba(0, 0, 0, 0.4)';
         bufferContext.fillRect(0, 0, bufferW, bufferH);
 
         fadeCountdown += 0.01;
@@ -291,16 +291,16 @@ function rafBody() {
         fgColor: termFgColor
     });
 
-    // requestAnimationFrame(rafBody);
+    requestAnimationFrame(rafBody);
 }
 
 // kickstart the loop
-// rafBody();
+rafBody();
 
 
-document.addEventListener('keydown', function (event) {
-    // arrow right
-    if (event.key === 'ArrowRight') {
-        requestAnimationFrame(rafBody);
-    }
-});
+// document.addEventListener('keydown', function (event) {
+//     // arrow right
+//     if (event.key === 'ArrowRight') {
+//         requestAnimationFrame(rafBody);
+//     }
+// });

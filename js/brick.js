@@ -51,10 +51,10 @@ export class Brick {
     }
 
     draw() {
-        bufferContext.fillStyle = '#040';
-        bufferContext.beginPath();
-        bufferContext.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
-        bufferContext.fill();
+        // bufferContext.fillStyle = '#040';
+        // bufferContext.beginPath();
+        // bufferContext.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
+        // bufferContext.fill();
 
         
         bufferContext.fillStyle = '#fff';

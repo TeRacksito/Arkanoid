@@ -22,7 +22,7 @@ export class GameLoop {
         // objects.balls.push(pong);
         // }
         // objects.interface.push(new InsertCoinScreen());
-        objects.player.push(new PlayerBar(0, 220, 0, 0, false));
+        objects.player.push(new PlayerBar(0, 220, 0, 0, true));
         // let player2 = new PlayerBar(0, 0, 0);
         // player2.position.y = 160;
         // objects.player.push(player2);
