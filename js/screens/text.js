@@ -1,8 +1,12 @@
-import { bufferContext, canvas, bufferCanvas, bufferW, bufferH, mousePos } from "./../ctr.js";
+import { bufferContext, canvas, bufferCanvas, bufferW, bufferH, mousePos } from "../ctr.js";
 
-export class InsertCoinScreen {
+export class TextScreen {
     currentTime = 0;
     hidden = false;
+
+    constructor(text) {
+        this.text = text;
+    }
 
     update(delta) {
         this.currentTime += delta;
@@ -19,7 +23,7 @@ export class InsertCoinScreen {
         if (!this.hidden) {
             bufferContext.fillStyle = '#fff';
             bufferContext.font = '15px monospace';
-            bufferContext.fillText('-- INSERT COIN --', bufferW/2, bufferH/2);
+            bufferContext.fillText(this.text, bufferW / 2, bufferH / 2);
         }
     }
 }

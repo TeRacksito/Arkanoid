@@ -1,6 +1,6 @@
 import { GameLoop } from "./core.js";
 import { bufferContext, canvas, bufferCanvas, bufferW, bufferH, mousePos } from "./ctr.js";
-import { Playable } from "./test.js";
+import { Playable } from "./ball.js";
 
 export class PlayerBar extends Playable {
     width = 30;

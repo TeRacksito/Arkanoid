@@ -1,6 +1,6 @@
 import { scaleFormula, posToCanvas } from './utils.js';
 import { GameLoop } from './core.js';
-import { Pong } from './test.js';
+import { Pong } from './ball.js';
 import { Brick } from './brick.js';
 
 const onecolor = one.color;
@@ -70,7 +70,8 @@ canvas.addEventListener('mousemove', onMouseMove, false);
 
 let fadeCountdown = 0;
 // let scaleCanvas = 0.2;
-let scaleCanvas = 1.04;
+let scaleCanvas = .04;
+let lastScaleCanvas = null;
 let scaleCanvasCooldown = 0;
 
 let gameLoopCooldown = 0;
@@ -94,8 +95,11 @@ function renderWorld(delta) {
     // redraw
     bufferContext.textAlign = 'center';
     bufferContext.font = '12px "Inconsolata"';
-    canvas.height = window.innerHeight * scaleCanvas;
-    canvas.width = canvas.height * (4 / 3);
+    if (lastScaleCanvas !== scaleCanvas) {
+        canvas.height = window.innerHeight * scaleCanvas;
+        canvas.width = canvas.height * (4 / 3);
+        lastScaleCanvas = scaleCanvas;
+    }
 
     if (scaleCanvas < 1.04) {
         // scaleCanvas += scaleFormula(1.04 - scaleCanvas, 0.00001, 0.01, 1.04, 0.4);
@@ -142,7 +146,7 @@ const spriteTexture = regl.texture({
 });
 
 const termFgColor = hex2vector('#fee');
-const termBgColor = hex2vector('#303030');
+const termBgColor = hex2vector('#404040');
 
 const quadCommand = regl({
     vert: `
@@ -304,3 +308,5 @@ rafBody();
 //         requestAnimationFrame(rafBody);
 //     }
 // });
+
+document.addEventListener("click", GameLoop.startPlay);

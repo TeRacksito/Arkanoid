@@ -12,7 +12,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at 50% 20%, #007c7c, #000);
+    background: radial-gradient(circle at 50% 20%, #009696, #000);
     overflow: hidden;
 }
 

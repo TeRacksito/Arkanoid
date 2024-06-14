@@ -1,13 +1,46 @@
 import { bufferContext, canvas, bufferCanvas, bufferW, bufferH, mousePos } from "./ctr.js";
-import { InsertCoinScreen } from "./screens/insert_coin.js";
+import { TextScreen } from "./screens/text.js";
+import { PointsScreen } from "./screens/points.js";
 import { PlayerBar } from "./playerBar.js";
 import { Brick } from "./brick.js";
-import { Pong } from "./test.js";
+import { Pong } from "./ball.js";
 
 export class GameLoop {
 
     static nextSpawn = 0;
     static cooldown = 0;
+    static stop = false;
+
+    static startPlay() {
+        if (objects.playing) {
+            return;
+        }
+
+        document.removeEventListener('click', GameLoop.startPlay);
+        objects.interface = [];
+
+        let minX = 30;
+        let maxX = 280;
+        let cols = 20;
+        let rows = 10;
+        let timeCounter = 0;
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                let x = minX + (maxX - minX) / cols * i + (rows - j) % 2 * 10;
+                let y = 20 + 7 * j;
+                let brick = new Brick(x, y, 10, 4, "#" + Math.floor(Math.random() * 16777215).toString(16), timeCounter);
+                objects.blocks.push(brick);
+                timeCounter += 1;
+            }
+        }
+
+        objects.player.push(new PlayerBar(0, 220, 0, 0, false));
+
+        objects.interface.push(new PointsScreen({ x: 20, y: 10 }));
+
+        objects.balls.push(new Pong(160, 120, 0, 1.5, 5, timeCounter));
+        objects.playing = true;
+    }
 
     static init() {
         // this.pongArray = new PongArray();
@@ -21,8 +54,8 @@ export class GameLoop {
         // pong.velocity.y = temp.x * Math.sin(angle) + temp.y * Math.cos(angle);
         // objects.balls.push(pong);
         // }
-        // objects.interface.push(new InsertCoinScreen());
-        objects.player.push(new PlayerBar(0, 220, 0, 0, true));
+        objects.interface.push(new TextScreen("-- INSERT COIN --"));
+        // objects.player.push(new PlayerBar(0, 220, 0, 0, false));
         // let player2 = new PlayerBar(0, 0, 0);
         // player2.position.y = 160;
         // objects.player.push(player2);
@@ -64,7 +97,7 @@ export class GameLoop {
         //     objects.balls.push(pong);
         // }
 
-        objects.balls.push(new Pong(160, 120, 5, -5, 5));
+        // objects.balls.push(new Pong(160, 120, 1, -1, 5));
 
         // objects.blocks.push(new Brick(92, 100, 10, 10));
         // objects.blocks.push(new Brick(108, 100, 10, 10));
@@ -74,18 +107,18 @@ export class GameLoop {
         // objects.blocks.push(new Brick(100, 150, 20, 10));
         // objects.blocks.push(new Brick(180, 100, 10, 10));
 
-        let minX = 30;
-        let maxX = 280;
-        let cols = 20;
-        let rows = 10;
-        for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-                let x = minX + (maxX - minX) / cols * i + (rows - j) % 2 * 10;
-                let y = 20 + 7 * j;
-                let brick = new Brick(x, y, 10, 4);
-                objects.blocks.push(brick);
-            }
-        }
+        // let minX = 30;
+        // let maxX = 280;
+        // let cols = 20;
+        // let rows = 10;
+        // for (let i = 0; i < cols; i++) {
+        //     for (let j = 0; j < rows; j++) {
+        //         let x = minX + (maxX - minX) / cols * i + (rows - j) % 2 * 10;
+        //         let y = 20 + 7 * j;
+        //         let brick = new Brick(x, y, 10, 4);
+        //         objects.blocks.push(brick);
+        //     }
+        // }
 
         // let brick = new Brick(160, 120, 20, 10);
         // objects.blocks.push(brick);
@@ -93,6 +126,23 @@ export class GameLoop {
     }
 
     static update(delta) {
+
+        console.log(objects.playing);
+
+        if (objects.playing) {
+            if (objects.blocks.length == 0) {
+                objects.playing = false;
+                objects.interface.push(new TextScreen("You win!"));
+                objects.balls.forEach(ball => { ball.startTime = -1 })
+                GameLoop.stop = true;
+            }
+
+            if (objects.balls.length == 0) {
+                objects.playing = false;
+                objects.interface.push(new TextScreen("You lose!"));
+                GameLoop.stop = true;
+            }
+        }
 
         // if (this.nextSpawn < 0) {
         //     let pong = new Pong(160, 120, 0, 3, Math.random() * 10 + 2);
@@ -118,6 +168,13 @@ export class GameLoop {
         });
 
         objects.player.forEach(object => {
+            if (this.cooldown <= 0) {
+                object.update(delta);
+            }
+            object.draw();
+        });
+
+        objects.powerUps.forEach(object => {
             if (this.cooldown <= 0) {
                 object.update(delta);
             }

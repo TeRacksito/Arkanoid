@@ -1,13 +1,15 @@
 import { bufferContext, canvas, bufferCanvas, bufferW, bufferH, mousePos } from "./ctr.js";
+import { PowerUp } from "./powerUp.js";
 
 export class Brick {
-    constructor(x, y, width, height) {
+    constructor(x, y, width, height, color = '#fff', startTime = 0) {
         this.position = { x: x, y: y };
         this.velocity = { x: 0, y: 0 };
         this.width = width;
         this.height = height;
         this.radius = this.width / 2 + this.height / 2;
-        this.color = '#fff';
+        this.color = color;
+        this.startTime = startTime;
 
         this.corners = {
             topLeft: { x: this.position.x - this.width / 2, y: this.position.y - this.height / 2 },
@@ -47,6 +49,12 @@ export class Brick {
         if (index > -1) {
             objects.blocks.splice(index, 1);
             console.log("Brick removed");
+            objects.points += 1;
+        }
+
+        let random = Math.random();
+        if (random < 0.1) {
+            objects.powerUps.push(new PowerUp(this.position.x, this.position.y));
         }
     }
 
@@ -56,8 +64,13 @@ export class Brick {
         // bufferContext.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
         // bufferContext.fill();
 
-        
-        bufferContext.fillStyle = '#fff';
+        if (this.startTime > 0) {
+            this.startTime -= 1;
+            return;
+        }
+
+
+        bufferContext.fillStyle = this.color;
         bufferContext.fillRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
 
 
