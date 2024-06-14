@@ -1,35 +1,35 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="es">
 
 <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="css/general.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arkanoid</title>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="css/general.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arkanoid</title>
 </head>
 
 <body>
-    <div>
-        <canvas id="render"></canvas>
-    </div>
+  <div>
+    <canvas id="render"></canvas>
+  </div>
 
-    <script>
-        const objects = { blocks: [], balls: [], player: [], interface: [] };
+  <script>
+    const objects = { blocks: [], balls: [], player: [], interface: [], powerUps: [], points: 0, playing: false };
 
-        function pausecomp(millis) {
-            var date = new Date();
-            var curDate = null;
-            do { curDate = new Date(); }
-            while (curDate - date < millis);
-        }
-    </script>
+    function pausecomp(millis) {
+      var date = new Date();
+      var curDate = null;
+      do {
+        curDate = new Date();
+      } while (curDate - date < millis);
+    }
+  </script>
 
-    <script src="https://npmcdn.com/regl@1.3.9/dist/regl.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.7.1/gl-matrix-min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/onecolor/3.1.0/one-color-all.js"></script>
+  <script src="https://npmcdn.com/regl@1.3.9/dist/regl.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.7.1/gl-matrix-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/onecolor/3.1.0/one-color-all.js"></script>
 
-    <script type="module" src="js/ctr.js"></script>
-
+  <script type="module" src="js/ctr.js"></script>
 </body>
 
 </html>
